@@ -4,11 +4,12 @@
   "version": "0.0.1",
   "type": "module",
   "packageManager": "pnpm@9.5.0",
-  "scripts": {
-    "dev": "vite",
-    "build": "pnpm tsc && next build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+ "scripts": {
+  "dev": "vite",
+  "build": "pnpm tsc && vite build",
+  "lint": "eslint .",
+  "preview": "vite preview"
+}
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
