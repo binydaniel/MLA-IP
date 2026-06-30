@@ -1,0 +1,14 @@
+packages:
+  - '.'
+allowBuilds:
+  '@tailwindcss/oxide': false
+  esbuild: false
+supportedArchitectures:
+  os:
+    - current
+    - Linux
+  cpu:
+    - x64
+    - arm64
+  libc:
+    - glibc
