@@ -9,7 +9,7 @@
   "build": "pnpm tsc && vite build",
   "lint": "eslint .",
   "preview": "vite preview"
-}
+
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
