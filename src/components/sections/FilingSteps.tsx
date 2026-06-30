@@ -188,6 +188,9 @@ export function Step2({ onNext }: StepProps) {
     const [trackingNo, setTrackingNo] = useState("");
     const [ipasNo, setIpasNo] = useState("");
     const [submitted, setSubmitted] = useState(false);
+    // Contextual form state extension local to Step 2 context inside view dock
+    const [reimbursementAmount, setReimbursementAmount] = useState("");
+    const [reimbursementCurrency, setReimbursementCurrency] = useState("ETB");
 
     return (
         <div>
@@ -226,6 +229,34 @@ export function Step2({ onNext }: StepProps) {
                     </div>
                 )}
             </SectionCard>
+            <div className="pt-4 border-t border-slate-200/60 grid grid-cols-3 gap-4 items-end">
+                <div className="col-span-2">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        Reimbursement Amount
+                    </label>
+                    <input
+                        type="number"
+                        placeholder="0.00"
+                        value={reimbursementAmount}
+                        onChange={(e) => setReimbursementAmount(e.target.value)}
+                        className="w-full text-sm px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-amber-600 transition-colors"
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        Currency
+                    </label>
+                    <select
+                        value={reimbursementCurrency}
+                        onChange={(e) => setReimbursementCurrency(e.target.value)}
+                        className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:outline-none focus:border-amber-600 transition-colors"
+                    >
+                        <option value="ETB">ETB (Br)</option>
+                        <option value="USD">USD ($)</option>
+
+                    </select>
+                </div>
+            </div>
             <SectionCard title="Applicant Documents" icon={<Upload size={16} />}>
                 <Note variant="blue">Ensure all required documents uploaded in Step 1 are included.</Note>
                 <div className="mt-4 grid grid-cols-3 gap-3">

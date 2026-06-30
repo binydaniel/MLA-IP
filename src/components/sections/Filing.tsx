@@ -4,7 +4,7 @@ import {
     ChevronRight, CheckCircle2, Clock, Plus, X, AlertTriangle, Calendar,
     HelpCircle, Bell, Settings, UserCircle2
 } from "lucide-react";
-import { accent, gold, bgAccent, titlesMap } from "./FilingConstants";
+import { accent, gold, titlesMap } from "./FilingConstants";
 import type { ProgressTrackerProps } from "./FilingTypes";
 import { Step1, Step2, Step3, Step4, Step5 } from "./FilingSteps";
 
@@ -73,6 +73,8 @@ export default function Filing() {
     const [selectedFiling, setSelectedFiling] = useState<typeof MOCK_FILINGS[0] | null>(null);
     const [unreadNotifications, setUnreadNotifications] = useState(true);
 
+
+
     const openNewFilingModal = () => {
         setSelectedFiling(null);
         setActiveStep(1);
@@ -96,7 +98,11 @@ export default function Filing() {
 
     const stepContent: Record<number, React.ReactNode> = {
         1: <Step1 onNext={next} />,
-        2: <Step2 onNext={next} />,
+        2: (
+            <div className="space-y-4">
+                <Step2 onNext={next} />
+            </div>
+        ),
         3: <Step3 onNext={next} />,
         4: <Step4 onNext={next} />,
         5: <Step5 />,

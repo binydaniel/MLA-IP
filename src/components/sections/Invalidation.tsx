@@ -164,7 +164,7 @@ function InvalidationModal({ onClose, onSave, editRecord }: InvalidationModalPro
 
           <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
             <div>
-              <Label>Challenger (Plaintiff)</Label>
+              <Label>Plaintiff</Label>
               <input
                   type="text"
                   placeholder="Party contesting the mark"

@@ -10,7 +10,13 @@ interface RecordalRecord {
   recordalType: "Change of Address" | "Change of Name" | "Assignment";
   trademarkName: string;
   dateReceived: string;
-  status: "Pending" | "In Progress" | "Completed";
+  status:
+      | "Receive Client Instructions"
+      | "Obtain Required Documents"
+      | "Register Instruction"
+      | "File Recordal Application"
+      | "Advertisement"
+      | "Obtain Certificate";
 }
 
 const accent = "#b8860b";
@@ -22,7 +28,7 @@ const emptyForm: RecordalRecord = {
   recordalType: "Change of Address",
   trademarkName: "",
   dateReceived: "",
-  status: "Pending",
+  status: "Receive Client Instructions",
 };
 
 // Initial corporate mock data array matching internal property mappings
@@ -33,7 +39,7 @@ const initialRecordalsData: RecordalRecord[] = [
     recordalType: "Change of Address",
     trademarkName: "Cold Gold Premium Lager",
     dateReceived: "2026-04-12",
-    status: "In Progress"
+    status: "File Recordal Application"
   },
   {
     id: "REC-2026-002",
@@ -41,7 +47,7 @@ const initialRecordalsData: RecordalRecord[] = [
     recordalType: "Change of Name",
     trademarkName: "Blue Nile Logistics Seal",
     dateReceived: "2026-05-19",
-    status: "Pending"
+    status: "Receive Client Instructions"
   },
   {
     id: "REC-2026-003",
@@ -49,7 +55,7 @@ const initialRecordalsData: RecordalRecord[] = [
     recordalType: "Assignment",
     trademarkName: "Meridian Global Connect",
     dateReceived: "2026-02-10",
-    status: "Completed"
+    status: "Obtain Certificate"
   },
   {
     id: "REC-2026-004",
@@ -57,7 +63,7 @@ const initialRecordalsData: RecordalRecord[] = [
     recordalType: "Change of Address",
     trademarkName: "Lumière Organics",
     dateReceived: "2026-06-01",
-    status: "Pending"
+    status: "Obtain Required Documents"
   },
   {
     id: "REC-2026-005",
@@ -65,7 +71,7 @@ const initialRecordalsData: RecordalRecord[] = [
     recordalType: "Assignment",
     trademarkName: "Apex Cloud Infrastructure",
     dateReceived: "2026-05-24",
-    status: "In Progress"
+    status: "Advertisement"
   }
 ];
 
@@ -76,7 +82,7 @@ const FIELD_STYLES = {
 };
 
 const GRID_LAYOUT_CLASS = "grid items-center px-5 py-3.5 border-b transition-colors";
-const GRID_COLUMNS_STYLE = { gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr 1.4fr 1.2fr" };
+const GRID_COLUMNS_STYLE = { gridTemplateColumns: "1.2fr 1.5fr 1.5fr 1.2fr 1.4fr 1.5fr" };
 
 interface RecordalModalProps {
   onClose: () => void;
@@ -88,16 +94,36 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
   const [form, setForm] = useState<RecordalRecord>({ ...emptyForm });
   const [error, setError] = useState("");
 
+  // Dynamically change workflow options and descriptions depending on recordal type selection
   useEffect(() => {
-    setForm(editRecord ? { ...editRecord } : { ...emptyForm });
+    if (editRecord) {
+      setForm({ ...editRecord });
+    } else {
+      setForm({ ...emptyForm });
+    }
     setError("");
   }, [editRecord]);
+
+  // Handler for type switch to reset status selection to first step if incompatible
+  const handleTypeChange = (type: "Change of Address" | "Change of Name" | "Assignment") => {
+    let nextStatus = form.status;
+    if (type === "Change of Address" && form.status === "Advertisement") {
+      nextStatus = "Receive Client Instructions"; // Address changes do not need advertisement
+    }
+    setForm({ ...form, recordalType: type, status: nextStatus });
+  };
 
   const isEditMode = !!editRecord;
 
   const handleSave = () => {
     if (!form.clientName || !form.recordalType || !form.trademarkName || !form.dateReceived || !form.status) {
       setError("Please fill in all fields.");
+      return;
+    }
+
+    // Explicit validation rules according to procedural requirements
+    if (form.recordalType === "Change of Address" && form.status === "Advertisement") {
+      setError("Note: There is no need for advertisement in the case of a change of address.");
       return;
     }
 
@@ -130,6 +156,20 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
       isEditMode ? "disabled:opacity-60 disabled:cursor-not-allowed" : ""
   }`;
 
+  // // Informative document mappings to display in the modal based on type
+  // const getRequiredDocumentsMessage = () => {
+  //   switch (form.recordalType) {
+  //     case "Change of Address":
+  //       return "Fresh POA reflecting the new address.";
+  //     case "Change of Name":
+  //       return "Foreign Change of Name Certificate and a fresh POA reflecting the new company name.";
+  //     case "Assignment":
+  //       return "POA on behalf of both companies and a notarized Deed of Assignment.";
+  //     default:
+  //       return "";
+  //   }
+  // };
+
   return (
       <div
           className="fixed inset-0 z-50 flex items-center justify-center"
@@ -149,13 +189,13 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
                   className="text-xs uppercase tracking-widest font-semibold mb-0.5"
                   style={{ color: "#b8860b", fontFamily: "'DM Mono', monospace" }}
               >
-                {isEditMode ? "Modify Recordal" : "New Recordal Entry"}
+                {isEditMode ? "Modify Recordal Workflow" : "New Recordal Entry"}
               </p>
               <h3
                   className="text-lg font-semibold"
                   style={{ fontFamily: "'Playfair Display', serif", color: "#f5f0e8" }}
               >
-                {isEditMode ? `Edit: ${editRecord?.id}` : "Recordals & Changes"}
+                {isEditMode ? `Edit: ${editRecord?.id}` : "Recordals"}
               </h3>
             </div>
             <button onClick={onClose} className="rounded-lg p-1.5 text-white/50 hover:text-[#f5f0e8] transition-colors">
@@ -182,7 +222,7 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
               <Label>Recordal Type</Label>
               <select
                   value={form.recordalType}
-                  onChange={(e) => setForm({ ...form, recordalType: e.target.value as any })}
+                  onChange={(e) => handleTypeChange(e.target.value as any)}
                   className={fieldCls}
                   style={FIELD_STYLES}
                   onFocus={handleFocus}
@@ -194,8 +234,10 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
               </select>
             </div>
 
+
+
             <div>
-              <Label>Trademark / Property Name</Label>
+              <Label>Trademark</Label>
               <input
                   type="text"
                   placeholder="e.g. Cold Gold Premium"
@@ -222,7 +264,7 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
             </div>
 
             <div>
-              <Label>Filing Status</Label>
+              <Label>Workflow Activity Status</Label>
               <select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value as any })}
@@ -231,11 +273,27 @@ function RecordalModal({ onClose, onSave, editRecord }: RecordalModalProps) {
                   onFocus={handleFocus}
                   onBlur={handleBlur}
               >
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
+                <option value="Receive Client Instructions">Step 1 — Receive Client Instructions</option>
+                <option value="Obtain Required Documents">Step 1 — Obtain Required Documents</option>
+                <option value="Register Instruction">Step 1 — Register Instruction</option>
+                <option value="File Recordal Application">Step 2 — File Recordal Application</option>
+                {form.recordalType !== "Change of Address" && (
+                    <option value="Advertisement">Step 3 — Advertisement</option>
+                )}
+                <option value="Obtain Certificate">
+                  {form.recordalType === "Change of Address" ? "Step 3 — Obtain Certificate" : "Step 4 — Obtain Certificate"}
+                </option>
               </select>
             </div>
+
+            {form.recordalType === "Change of Address" && (
+                <div
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium"
+                    style={{ background: "rgba(184,134,11,0.06)", border: "1px solid rgba(184,134,11,0.15)", color: "#7a5500" }}
+                >
+
+                </div>
+            )}
 
             {error && (
                 <div
@@ -300,24 +358,16 @@ export default function Recordals() {
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-[9px] font-bold uppercase tracking-widest text-[#b8860b] font-mono leading-none mb-1">
-
               </span>
-              <h1
-                  className="text-lg font-semibold tracking-tight text-[#f5f0e8] leading-none"
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-              >
 
-              </h1>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Contextual Quick Documentation Tooltip */}
             <button className="p-2 text-white/40 hover:text-white/80 transition-colors rounded-lg hover:bg-white/5 hidden sm:inline-block">
               <HelpCircle size={16} />
             </button>
 
-            {/* Notifications Controller Trigger */}
             <button
                 onClick={() => setUnreadNotifications(false)}
                 className="p-2 text-white/70 hover:text-[#b8860b] transition-colors rounded-lg hover:bg-white/5 relative"
@@ -338,7 +388,7 @@ export default function Recordals() {
               <UserCircle2 size={20} className="text-[#b8860b]" />
               <div className="hidden md:flex flex-col text-[10px] font-mono">
                 <span className="text-white/80 font-bold leading-tight">A. Abraham</span>
-                <span className="text-white/40 leading-none"></span>
+                <span className="text-white/40 leading-none">Senior Attorney</span>
               </div>
             </button>
           </div>
@@ -363,7 +413,7 @@ export default function Recordals() {
                   className="text-2xl font-semibold text-slate-900"
                   style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                Recordals Registry
+                Recordals
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Track formal transfers of title, corporate identity adaptations, and regulatory address changes within intellectual property registers.
@@ -400,7 +450,7 @@ export default function Recordals() {
                 <span className="text-xs font-semibold uppercase tracking-widest">Recordal Type</span>
                 <span className="text-xs font-semibold uppercase tracking-widest">Trademark Property</span>
                 <span className="text-xs font-semibold uppercase tracking-widest">Date Logged</span>
-                <span className="text-xs font-semibold uppercase tracking-widest">Status</span>
+                <span className="text-xs font-semibold uppercase tracking-widest">Activity Status</span>
               </div>
 
               {/* Data Rows Mapping */}
@@ -408,9 +458,12 @@ export default function Recordals() {
                 const isEven = i % 2 === 0;
                 const defaultBg = isEven ? "#fdfaf4" : "#faf6ee";
 
-                const statusColor =
-                    rec.status === "Pending" ? "#b8860b" :
-                        rec.status === "In Progress" ? "#2b6cb0" : "#2e7d32";
+                // Map specific colors dynamically per procedural workflow activity stage
+                let statusColor = "#b8860b"; // Default Amber (Receive / Obtain phases)
+                if (rec.status === "Register Instruction") statusColor = "#4a5568";      // Charcoal
+                if (rec.status === "File Recordal Application") statusColor = "#2b6cb0"; // Corporate Blue
+                if (rec.status === "Advertisement") statusColor = "#1a4a7a";              // Deep Indigo
+                if (rec.status === "Obtain Certificate") statusColor = "#2e7d32";        // Legal Green
 
                 return (
                     <div
